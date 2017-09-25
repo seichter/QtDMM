@@ -44,8 +44,7 @@ class DMM : public QObject
 	  QString					errorString() const { return m_error; }
 	  bool						isOpen() const;
 	  void						setFormat( ReadEvent::DataFormat );
-	  void						setPortSettings(QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup, bool rts, bool cts,
-												 bool dsr, bool dtr );
+	  void						setPortSettings(QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup, bool rts, bool dtr );
 	  void						setNumValues( int );
 	  void						setConsoleLogging( bool on ) { m_consoleLogging = on; }
 
@@ -69,8 +68,6 @@ class DMM : public QObject
 	  bool                      m_externalSetup;
 	  bool						m_dtr;
 	  bool						m_rts;
-	  bool						m_cts;
-	  bool						m_dsr;
 	  int                       m_flags;
 	  int						m_delayTimer;
 
@@ -86,6 +83,7 @@ class DMM : public QObject
 	  void						readVC940Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
 	  void						readQM1537Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
 	  void						readRS22812Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+	  void readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFormat df);
 	  const char				*vc820Digit( int );
 	  const char				*RS22812Digit( int );
 

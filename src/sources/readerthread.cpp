@@ -1,7 +1,7 @@
 //======================================================================
-// File:		readerthread.cpp
-// Author:	Matthias Toussaint
-// Created:	Sat Apr 14 12:44:00 CEST 2001
+// File: readerthread.cpp
+// Author: Matthias Toussaint
+// Created: Sat Apr 14 12:44:00 CEST 2001
 //----------------------------------------------------------------------
 // This file is part of QtDMM.
 //
@@ -50,129 +50,134 @@ void ReaderThread::setFormat( ReadEvent::DataFormat format )
 
 void ReaderThread::setHandle( QSerialPort *handle )
 {
-  m_serialPort=handle;
+  m_serialPort = handle;
 
   m_readValue = false;
 
   if (!m_serialPort)
   {
-	m_status = ReaderThread::NotConnected;
-	m_readValue = false;
+    m_status = ReaderThread::NotConnected;
+    m_readValue = false;
   }
   else
   {
-	connect(m_serialPort,SIGNAL(readyRead()),this,SLOT(socketNotifierSLOT()));
-	connect(m_serialPort,SIGNAL(aboutToClose()),this,SLOT(socketClose()));
+    connect(m_serialPort,SIGNAL(readyRead()),this,SLOT(socketNotifierSLOT()));
+    connect(m_serialPort,SIGNAL(aboutToClose()),this,SLOT(socketClose()));
   }
 }
+
 void ReaderThread::socketClose()
 {
-	m_id=0;
+  m_id = 0;
 }
 
 void ReaderThread::start()
 {
-	QTimer *timer=new QTimer(this);
-	connect(timer,SIGNAL(timeout()),this,SLOT(timer()));
-	timer->start(10);
+  QTimer *timer=new QTimer(this);
+  connect(timer,SIGNAL(timeout()),this,SLOT(timer()));
+  timer->start(10);
 }
+
 void ReaderThread::timer()
 {
-	if (m_readValue)
-	{
-		readDMM();
-		m_readValue = false;
-	}
+  if (m_readValue)
+  {
+    readDMM();
+    m_readValue = false;
+  }
 }
 
 void ReaderThread::startRead()
 {
-  //std::cerr << "start read" << std::endl;
+  // std::cerr << "start read" << std::endl;
   m_readValue = true;
   m_sendRequest = true;
 }
 
 void ReaderThread::socketNotifierSLOT()
 {
-  //std::cerr << "socket call" << std::endl;
+  // std::cerr << "socket call" << std::endl;
 
-  int  retval;
+  int  retval = 0;
+  int r;
   char byte;
 
   m_status = ReaderThread::Ok;
 
+  while ((r = m_serialPort->read( &byte, 1)) > 0) {
+    retval++;
 
-	retval = m_serialPort->read( &byte, 1);
+    m_fifo[m_length] = byte;
 
-	if (-1 == retval)
-	{
-	  m_status = ReaderThread::Error;
-	  return;
-	}
-	else if (0 == retval)
-	{
-	  m_status = ReaderThread::Timeout;
-	  return;
-	}
-	else
-	{
-	  m_fifo[m_length] = byte;
+    // fprintf( stderr, "READ: %02X - %02X %d\n", (unsigned)byte, (unsigned)byte & 0xf0, m_length );
 
-	  //fprintf( stderr, "READ: %02X - %02X %d\n", (unsigned)byte, (unsigned)byte & 0xf0, m_length );
+    if (checkFormat())
+    {
+      m_length = (m_length - formatLength() + 1 + FIFO_LENGTH) % FIFO_LENGTH;
 
-	  if (checkFormat())
-	  {
-		m_length = (m_length-formatLength()+1+FIFO_LENGTH)%FIFO_LENGTH;
+      // fprintf( stderr, "Format Ok!\n" );
 
-		//fprintf( stderr, "Format Ok!\n" );
+      for (int i = 0; i < formatLength(); ++i)
+      {
+        m_buffer[i] = m_fifo[m_length];
+        m_length = (m_length + 1) % FIFO_LENGTH;
+      }
 
-		for (int i=0; i<formatLength(); ++i)
-		{
-		  m_buffer[i] = m_fifo[m_length];
-		  m_length = (m_length+1)%FIFO_LENGTH;
-		}
+      m_sendRequest = true;
+      m_length = 0;
 
-		m_sendRequest = true;
-		m_length = 0;
+      Q_EMIT readEvent( m_buffer, m_id, m_format );
+      //QApplication::postEvent( m_receiver,
+      //    new ReadEvent( m_buffer, formatLength(), m_id, m_format ) );
 
-		Q_EMIT readEvent( m_buffer, m_id, m_format );
-		//QApplication::postEvent( m_receiver,
-		//    new ReadEvent( m_buffer, formatLength(), m_id, m_format ) );
+      m_id = (m_id + 1) % m_numValues;
 
-		m_id = (m_id+1) % m_numValues;
-	  }
-	  else
-		m_length = (m_length+1) % FIFO_LENGTH;
-	}
+      if (m_serialPort->bytesAvailable() < formatLength()) {
+        break;
+      }
+    }
+    else
+      m_length = (m_length + 1) % FIFO_LENGTH;
+  }
 
+  if (0 == retval) {
+    if (-1 == r) {
+      m_status = ReaderThread::Error;
+    }
+    else if (0 == r) {
+      m_status = ReaderThread::Timeout;
+    }
+  }
 }
 
 int  ReaderThread::formatLength() const
 {
   switch (m_format)
   {
-	  case ReadEvent::Metex14:
-		return 14;
-	  case ReadEvent::Voltcraft14Continuous:
-		return 14;
-	  case ReadEvent::Voltcraft15Continuous:
-		return 15;
-	  case ReadEvent::M9803RContinuous:
-		return 11;
-	  case ReadEvent::PeakTech10:
-		return 11;
-	  case ReadEvent::VC820Continuous:
-		return 14;
-	  case ReadEvent::VC870Continuous:
-		return 23;
-	  case ReadEvent::IsoTech:
-		return 22;
-	  case ReadEvent::VC940Continuous:
-		return 11;
-	  case ReadEvent::QM1537Continuous:
-		return 14;
-	  case ReadEvent::RS22812Continuous:
-		return 9;
+    case ReadEvent::Metex14:
+      return 14;
+    case ReadEvent::Voltcraft14Continuous:
+      return 14;
+    case ReadEvent::Voltcraft15Continuous:
+      return 15;
+    case ReadEvent::M9803RContinuous:
+      return 11;
+    case ReadEvent::PeakTech10:
+      return 11;
+    case ReadEvent::VC820Continuous:
+      return 14;
+    case ReadEvent::VC870Continuous:
+      return 23;
+    case ReadEvent::IsoTech:
+      return 22;
+    case ReadEvent::VC940Continuous:
+      return 11;
+    case ReadEvent::QM1537Continuous:
+      return 14;
+    case ReadEvent::RS22812Continuous:
+      return 9;
+    case ReadEvent::CyrustekES51922:
+      return 14;
   }
   return 0;
 }
@@ -183,39 +188,42 @@ void ReaderThread::readDMM()
 
   switch(m_format)
   {
-	  case ReadEvent::Metex14:
-		  readMetex14();
-		  break;
-	  case ReadEvent::Voltcraft14Continuous:
-		  readVoltcraft14Continuous();
-		  break;
-	  case ReadEvent::Voltcraft15Continuous:
-		  readVoltcraft15Continuous();
-		  break;
-	  case ReadEvent::M9803RContinuous:
-		  readM9803RContinuous();
-		  break;
-	  case ReadEvent::PeakTech10:
-		  readPeakTech10();
-		  break;
-	  case ReadEvent::IsoTech:
-		  readIsoTech();
-		  break;
-	  case ReadEvent::QM1537Continuous:
-		  readQM1537Continuous();
-		  break;
-	  case ReadEvent::VC820Continuous:
-		  readVC820();
-		  break;
-	  case ReadEvent::VC870Continuous:
-		  readVC870();
-		  break;
-	  case ReadEvent::VC940Continuous:
-		  readVC940();
-		  break;
-	  case ReadEvent::RS22812Continuous:
-		  readRS22812Continuous();
-		  break;
+    case ReadEvent::Metex14:
+      readMetex14();
+      break;
+    case ReadEvent::Voltcraft14Continuous:
+      readVoltcraft14Continuous();
+      break;
+    case ReadEvent::Voltcraft15Continuous:
+      readVoltcraft15Continuous();
+      break;
+    case ReadEvent::M9803RContinuous:
+      readM9803RContinuous();
+      break;
+    case ReadEvent::PeakTech10:
+      readPeakTech10();
+      break;
+    case ReadEvent::IsoTech:
+      readIsoTech();
+      break;
+    case ReadEvent::QM1537Continuous:
+      readQM1537Continuous();
+      break;
+    case ReadEvent::VC820Continuous:
+      readVC820();
+      break;
+    case ReadEvent::VC870Continuous:
+      readVC870();
+      break;
+    case ReadEvent::VC940Continuous:
+      readVC940();
+      break;
+    case ReadEvent::RS22812Continuous:
+      readRS22812Continuous();
+      break;
+    case ReadEvent::CyrustekES51922:
+      readCyrustekES51922();
+      break;
   }
 }
 
@@ -279,6 +287,11 @@ bool ReaderThread::checkFormat()
   {
 	if (m_fifo[m_length] == 0x0d)
 		return true;
+  }
+  else if (m_format == ReadEvent::CyrustekES51922)
+  {
+    if ((m_length) && (m_fifo[m_length - 1] == 0x0d) && (m_fifo[m_length] == 0x0a))
+      return true;
   }
   else if (m_format == ReadEvent::RS22812Continuous)
   {
@@ -537,6 +550,10 @@ void ReaderThread::readMetex14()
 }
 
 void ReaderThread::readVoltcraft14Continuous()
+{
+}
+
+void ReaderThread::readCyrustekES51922()
 {
 }
 

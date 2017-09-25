@@ -81,8 +81,6 @@ class ConfigDlg : public QDialog, private Ui::UIConfigDlg
 	  int					stopBits() const;
 	  int					numValues() const;
 	  bool					rts() const;
-	  bool					cts() const;
-	  bool					dsr() const;
 	  bool					dtr() const;
 
 	  QColor				bgColor() const;

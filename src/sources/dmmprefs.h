@@ -58,8 +58,6 @@ class DmmPrefs : public PrefWidget ,private Ui::UIDmmPrefs
 	  int					numValues() const;
 	  bool					externalSetup() const;
 	  bool					rts() const;
-	  bool					cts() const;
-	  bool					dsr() const;
 	  bool					dtr() const;
 	  ReadEvent::DataFormat	format() const;
 	  int					display() const;

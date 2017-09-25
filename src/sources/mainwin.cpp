@@ -23,13 +23,10 @@
 #include <QtGui>
 #include <QtWidgets>
 
-
 #include "mainwin.h"
 #include "mainwid.h"
 #include "displaywid.h"
 #include "config.h"
-
-
 
 
 MainWin::MainWin( QWidget *parent) : QMainWindow( parent),
@@ -121,12 +118,13 @@ void MainWin::createActions()
   connect( action_Direct_help, SIGNAL( triggered() ),m_wid, SLOT( helpSLOT() ));
   connect( action_Tipp_of_the_day, SIGNAL( triggered() ),m_wid, SLOT( showTipsSLOT() ));
 
+  /*
   connect( toolBarDisplay, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setToolbarVisibilitySLOT() ));
   connect( toolBarHelp, SIGNAL( visibilityChanged( bool ) ),  this, SLOT( setToolbarVisibilitySLOT() ));
   connect( toolBarFile, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setToolbarVisibilitySLOT() ));
   connect( toolBarRecorder, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setToolbarVisibilitySLOT() ));
   connect( toolBarDMM, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setToolbarVisibilitySLOT() ));
-
+  */
 }
 
 void MainWin::runningSLOT( bool on )
@@ -154,19 +152,19 @@ void MainWin::connectSLOT( bool on )
 
 void MainWin::on_action_On_version_triggered()
 {
-  QMessageBox::about(this,tr("QtDMM: Welcome!" ),tr("<h1>QtDMM %1</h1><hr>"\
-													"<div align=right><i>A simple recorder for DMM's</i></div><p>"\
-													"<div align=justify>A simple display software for a variety of digital multimeter. Currently confirmed are:"\
-													"<table>%2</table>Other compatible models may work also.<p>"\
-													"QtDMM features min/max memory and a configurable "\
-													"recorder with import/export and printing function. Sampling may"\
-													" be started manually, at a given time or triggered by a measured threshold. "\
-													"Additionally an external program may be started when given thresholds are reached.</div>"\
-													 "<div align=justify><b>QtDMM</b> uses the platform independent toolkit "\
-													"<b>Qt</b> version %3 and is licensed under <b>GPL 3</b> (Versions prior to v0.9.0 where licensed under GPL 2)</div><br>"\
-													"&copy; 2001-2014 Matthias Toussaint &nbsp;-&nbsp;&nbsp;<font color=blue><u><a href='mailto:qtdmm@mtoussaint.de'>qtdmm@mtoussaint.de</a></u></font>"\
-													"<p><br>The icons (except the DMM icon) have been taken from the KDE project.<p>")
-					 .arg(APP_VERSION).arg(m_wid->deviceListText()).arg(qVersion()));
+  QMessageBox::about(this,tr("QtDMM: Welcome!" ), tr("<h1>QtDMM %1</h1><hr>" \
+    "<div align=right><i>A simple recorder for DMM's</i></div><p>" \
+    "<div align=justify>A simple display software for a variety of digital multimeter. Currently confirmed are:" \
+    "<table>%2</table>Other compatible models may work also.<p>" \
+    "QtDMM features min/max memory and a configurable " \
+    "recorder with import/export and printing function. Sampling may" \
+    " be started manually, at a given time or triggered by a measured threshold. " \
+    "Additionally an external program may be started when given thresholds are reached.</div>" \
+    "<div align=justify><b>QtDMM</b> uses the platform independent toolkit " \
+    "<b>Qt</b> version %3 and is licensed under <b>GPL 3</b> (Versions prior to v0.9.0 where licensed under GPL 2)</div><br>" \
+    "&copy; 2001-2016 Matthias Toussaint &nbsp;-&nbsp;&nbsp;<font color=blue><u><a href='mailto:qtdmm@mtoussaint.de'>qtdmm@mtoussaint.de</a></u></font>" \
+    "<p><br>The icons (except the DMM icon) have been taken from the KDE project.<p>")
+    .arg(APP_VERSION).arg(m_wid->deviceListText()).arg(qVersion()));
 }
 
 void MainWin::closeEvent( QCloseEvent *ev )

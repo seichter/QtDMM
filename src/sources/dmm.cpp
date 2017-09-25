@@ -26,6 +26,9 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
+
 
 #define LOG_OUTPUT
 
@@ -41,9 +44,7 @@ DMM::DMM(QObject *parent) :
   m_consoleLogging( false ),
   m_externalSetup( false ),
   m_dtr(false),
-  m_rts(false),
-  m_cts(false),
-  m_dsr(false)
+  m_rts(false)
 {
   m_readerThread = new ReaderThread( this );
 
@@ -56,7 +57,7 @@ DMM::DMM(QObject *parent) :
 }
 
 void DMM::setPortSettings( QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup,
-						   bool rts, bool cts, bool dsr, bool dtr )
+						   bool rts, bool dtr )
 {
   m_externalSetup = externalSetup;
   m_parity  = parity;
@@ -64,8 +65,6 @@ void DMM::setPortSettings( QSerialPort::DataBits bits, QSerialPort::StopBits sto
   m_dataBits=bits;
   m_dtr=dtr;
   m_rts=rts;
-  m_cts=cts;
-  m_dsr=dsr;
 }
 
 void DMM::setFormat( ReadEvent::DataFormat format )
@@ -207,6 +206,9 @@ void DMM::readEventSLOT( const QByteArray & data, int id, ReadEvent::DataFormat 
 		  case ReadEvent::RS22812Continuous:
 				readRS22812Continuous( data, id, df );
 			   break;
+      case ReadEvent::CyrustekES51922:
+        readCyrustekES51922(data, id, df);
+        break;
 	  }
 	}
 	else
@@ -676,6 +678,279 @@ void DMM::readASCII( const QByteArray & data, int id, ReadEvent::DataFormat df )
  m_error = tr( "Connected %1" ).arg(m_device);
 }
 
+void DMM::readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFormat df) {
+  QString val;
+  QString special;
+  QString unit;
+  QString power;
+  QString range;
+  bool batteryLow;
+  bool relative;
+  bool hold;
+
+  const char *pStr = data.data();
+
+#define CyrustekES51922_Range 0
+#define CyrustekES51922_Function 6
+#define CyrustekES51922_Status 7
+#define CyrustekES51922_Option1 8
+#define CyrustekES51922_Option2 9
+#define CyrustekES51922_Option3 10
+#define CyrustekES51922_Option4 11
+
+  if (pStr[CyrustekES51922_Status] & 0x04) {
+    val = "-";
+  }
+  else {
+    val = " ";
+  }
+
+  val += pStr[1];
+  val += pStr[2];
+  val += pStr[3];
+  val += pStr[4];
+  val += pStr[5];
+
+  double dVal = val.toDouble();
+  double dMult = 1.0;
+
+  switch (pStr[CyrustekES51922_Function]) {
+  case 0x30:
+    unit = "A";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-3;
+      break;
+    }
+    break;
+
+  case 0x31:
+    // Diode
+    unit = "V";
+    special = "DI";
+    dMult = 1.0e-3;
+    break;
+
+  case 0x32:
+    unit = "Hz";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-2;
+      break;
+    case 0x31:
+      dMult = 1.0e-1;
+      break;
+    case 0x33:
+      dMult = 1.0;
+      break;
+    case 0x34:
+      dMult = 1.0e1;
+      break;
+    case 0x35:
+      dMult = 1.0e2;
+      break;
+    case 0x36:
+      dMult = 1.0e3;
+      break;
+    case 0x37:
+      dMult = 1.0e4;
+      break;
+    }
+    break;
+
+  case 0x33:
+    unit = "Ohm";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-2;
+      break;
+    case 0x31:
+      dMult = 1.0e-1;
+      break;
+    case 0x32:
+      dMult = 1.0;
+      break;
+    case 0x33:
+      dMult = 1.0e1;
+      break;
+    case 0x34:
+      dMult = 1.0e2;
+      break;
+    case 0x35:
+      dMult = 1.0e3;
+      break;
+    case 0x36:
+      dMult = 1.0e4;
+      break;
+    }
+    // printf("Found OHM reading! dVal= %f  dMult= %f\n", dVal, dMult);
+
+    break;
+
+  case 0x34:
+    unit = "degC";
+    break;
+
+  case 0x35:
+    unit = "CONDUCTANCE";
+    break;
+
+  case 0x36:
+    unit = "F";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-12;
+      break;
+    case 0x31:
+      dMult = 1.0e-11;
+      break;
+    case 0x32:
+      dMult = 1.0e-10;
+      break;
+    case 0x33:
+      dMult = 1.0e-9;
+      break;
+    case 0x34:
+      dMult = 1.0e-8;
+      break;
+    case 0x35:
+      dMult = 1.0e-7;
+      break;
+    case 0x36:
+      dMult = 1.0e-6;
+      break;
+    case 0x37:
+      dMult = 1.0e-5;
+      break;
+    }
+    break;
+
+  case 0x3b:
+    unit = "V";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-4;
+      break;
+    case 0x31:
+      dMult = 1.0e-3;
+      break;
+    case 0x32:
+      dMult = 1.0e-2;
+      break;
+    case 0x33:
+      dMult = 1.0e-1;
+      break;
+    case 0x34:
+      dMult = 1.0e-5;
+      break;
+    }
+    break;
+
+  case 0x3d: // uA
+    unit = "A";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-8;
+      break;
+    case 0x31:
+      dMult = 1.0e-7;
+      break;
+    }
+    break;
+
+  case 0x3f: // mA
+    unit = "A";
+
+    switch (pStr[CyrustekES51922_Range]) {
+    case 0x30:
+      dMult = 1.0e-6;
+      break;
+    case 0x31:
+      dMult = 1.0e-5;
+      break;
+    }
+    break;
+  }
+
+  if (pStr[CyrustekES51922_Status] & 1) {
+    val = "  OL  ";
+    dVal = NAN;
+  }
+  else if (pStr[CyrustekES51922_Option2] & 8) {
+    val = "  UL  ";
+    dVal = NAN;
+  }
+  else {
+    while (fabs(dVal) >= 1.0) {
+      dVal /= 10.0;
+      dMult *= 10.0;
+    }
+
+    double displayValue;
+
+    if (dMult >= 1.0e9) {
+      unit.prepend("G");
+      displayValue = dVal * (dMult / 1.0e9);
+    }
+    else if (dMult >= 1.0e6) {
+      unit.prepend("M");
+      displayValue = dVal * (dMult / 1.0e6);
+    }
+    else if (dMult >= 1.0e3) {
+      unit.prepend("k");
+      displayValue = dVal * (dMult / 1.0e3);
+    }
+    else if (dMult >= 1.0e0) {
+      displayValue = dVal * (dMult / 1.0e0);
+    }
+    else if (dMult >= 1.0e-3) {
+      unit.prepend("m");
+      displayValue = dVal * (dMult / 1.0e-3);
+    }
+    else if (dMult >= 1.0e-6) {
+      unit.prepend("u");
+      displayValue = dVal * (dMult / 1.0e-6);
+    }
+    else if (dMult >= 1.0e-9) {
+      unit.prepend("n");
+      displayValue = dVal * (dMult / 1.0e-9);
+    }
+    else if (dMult >= 1.0e-12) {
+      unit.prepend("p");
+      displayValue = dVal * (dMult / 1.0e-12);
+    }
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(4) << displayValue;
+    val = QString::fromStdString(ss.str());
+    dVal *= dMult;
+  }
+
+  batteryLow = pStr[CyrustekES51922_Status] & 2;
+  relative = pStr[CyrustekES51922_Option1] & 2;
+
+  if (pStr[CyrustekES51922_Option3] & 2)
+    special.append(" AUTO");
+  else
+    special.append(" MANU");
+
+  if (pStr[CyrustekES51922_Option3] & 8)
+    special.append(" DC");
+  else
+    special.append(" AC");
+
+  hold = pStr[CyrustekES51922_Option4] & 2;
+
+  Q_EMIT value(dVal, val, unit, special, true, id);
+  m_error = tr("Connected %1").arg(m_device);
+}
+
 void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::DataFormat /*df*/ )
 {
   QString val;
@@ -683,33 +958,51 @@ void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::Data
   QString unit;
   const char *pStr = data.data();
 
-  if (pStr[0]!=0x0A)
-	  return;
-  if (pStr[1] == '-')
-	val = " -";
-  else
-	val = "  ";
-
-  if ((pStr[2] == ';') &&
-	  (pStr[3] == '0') &&
-	  (pStr[4] == ':') &&
-	  (pStr[5] == ';'))
+  if (pStr[0] == '-')
   {
-	 val += "  0L";
+    val = " -";
+  }
+  else if(pStr[0] == '+')
+  {
+    val = "  ";
+  }
+  else goto error;
+
+  for (int i = 1; i < 4; i++)
+  {
+    if (pStr[i] < '0')
+      goto error;
+    if (pStr[i] > '9')
+      goto error;
+  }
+
+  if (0)
+  {
+    error:
+      printf("Data error!\n");
+      return;
+  }
+
+  if ((pStr[1] == ';') &&
+      (pStr[2] == '0') &&
+      (pStr[3] == ':') &&
+      (pStr[4] == ';'))
+  {
+     val += "  0L";
   }
   else
   {
-	val += pStr[2];
-	val += pStr[3];
-	val += pStr[4];
-	val += pStr[5];
+    val += pStr[1];
+    val += pStr[2];
+    val += pStr[3];
+    val += pStr[4];
   }
 
   bool showBar = true;
-  bool doACDC = false;
+  bool doACDC = true;
   bool doUnits = true;
 
-  switch (pStr[7])
+  switch (pStr[6])
   {
 	case 0x31:
 	  val = insertComma (val,1);
@@ -726,11 +1019,11 @@ void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::Data
   double d_val = val.toDouble();
 
   /* OK, now let's figure out what we're looking at. */
-  if (pStr[11] & 0x80)
+  if (pStr[10] & 0x80)
   {
 	/* Voltage, including diode test */
 	unit = "V";
-	if (pStr[10] & 0x04)
+	if (pStr[9] & 0x04)
 	{
 	  /* Diode test */
 	  special = "DI";
@@ -739,31 +1032,31 @@ void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::Data
 	else
 	  doACDC = true;
   }
-  else if (pStr[11] & 0x40)
+  else if (pStr[10] & 0x40)
   {
 	/* Current */
 	unit = "A";
 	doACDC = true;
   }
-  else if (pStr[11] & 0x20)
+  else if (pStr[10] & 0x20)
   {
 	/* Resistance, including continuity test */
 	unit = "Ohm";
 	special = "OH";
   }
-  else if (pStr[11] & 0x08)
+  else if (pStr[10] & 0x08)
   {
 	/* Frequency */
 	unit = "Hz";
 	special = "HZ";
   }
-  else if (pStr[11] & 0x04)
+  else if (pStr[10] & 0x04)
   {
 	/* Capacitance */
 	unit = "F";
 	special = "CA";
   }
-  else if (pStr[10] & 0x02)
+  else if (pStr[9] & 0x02)
   {
 	/* Duty cycle */
 	unit = "%";
@@ -773,7 +1066,7 @@ void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::Data
 
   if (doACDC)
   {
-	if (pStr[8] & 0x08)
+	if (pStr[7] & 0x08)
 	  special = "AC";
 	else
 	  special = "DC";
@@ -781,27 +1074,27 @@ void DMM::readQM1537Continuous( const QByteArray & data, int id, ReadEvent::Data
 
   if (doUnits)
   {
-	if (pStr[9] & 0x02)
+	if (pStr[8] & 0x02)
 	{
 	  d_val /= 1e9;
 	  unit.prepend ('n');
 	}
-	else if (pStr[10] & 0x80)
+	else if (pStr[9] & 0x80)
 	{
 	  d_val /= 1e6;
 	  unit.prepend ('u');
 	}
-	else if (pStr[10] & 0x40)
+	else if (pStr[9] & 0x40)
 	{
 	  d_val /= 1e3;
 	  unit.prepend ('m');
 	}
-	else if (pStr[10] & 0x20)
+	else if (pStr[9] & 0x20)
 	{
 	  d_val *= 1e3;
 	  unit.prepend ('k');
 	}
-	else if (pStr[10] & 0x10)
+	else if (pStr[9] & 0x10)
 	{
 	  d_val *= 1e6;
 	  unit.prepend ('M');

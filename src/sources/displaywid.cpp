@@ -217,6 +217,7 @@ void DisplayWid::setDisplayMode( int dm, bool minMax, bool bar, int numValues )
 
   case 8:
 	m_range = 6000;
+        break;
 
   case 9:
 	m_range = 40000;

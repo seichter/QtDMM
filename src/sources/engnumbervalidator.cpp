@@ -52,6 +52,8 @@ double EngNumberValidator::value( const QString & string )
 {
   double factor = 1.;
 
+  if (string.isEmpty()) return 0.0;
+
   // mt: added toAscii
   switch (string[string.length()-1].toLatin1())
   {

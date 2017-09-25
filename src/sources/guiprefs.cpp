@@ -97,6 +97,8 @@ void GuiPrefs::factoryDefaultsSLOT()
 
 void GuiPrefs::setToolbarVisibility( bool disp, bool dmm, bool graph, bool file, bool help )
 {
+  printf( "GUI vis %d %d %d %d %d\n", disp, dmm, graph, file, help );
+
   ui_showDisplay->setChecked( disp );
   ui_dmmToolBar->setChecked( dmm );
   ui_graphToolBar->setChecked( graph );
@@ -107,7 +109,7 @@ void GuiPrefs::setToolbarVisibility( bool disp, bool dmm, bool graph, bool file,
 void GuiPrefs::applySLOT()
 {
   m_cfg->setInt( "QtDMM/version", 0 );
-  m_cfg->setInt( "QtDMM/revision", 84 );
+  m_cfg->setInt( "QtDMM/revision", 92 );
   m_cfg->setBool( "QtDMM/show-tip", showTip() );
   m_cfg->setBool( "Save/window-pos", saveWindowPosition() );
   m_cfg->setBool( "Save/window-size", saveWindowSize() );

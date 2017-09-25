@@ -81,6 +81,7 @@ struct DMMInfo dmm_info[] = {
 
 							  {"Metex M-3660D", 1, 0, 7, 2, 1, 0, 1, 0, 0,1,1,1},
 							  {"Metex M-3830D", 1, 0, 7, 2, 4, 0, 1, 0, 0,1,1,1},      // no image
+                                                          {"Metex M-3840D", 1, 0, 7, 2, 4, 0, 1, 0, 0,1,1,1},
 							  {"Metex M-3850D", 1, 0, 7, 2, 4, 0, 1, 0, 0,1,1,1},
 							  {"Metex M-3850M", 5, 0, 7, 2, 4, 0, 1, 0, 0,1,1,1},
 							  {"Metex M-3870D", 1, 0, 7, 1, 1, 0, 1, 0, 0,1,1,1},
@@ -112,6 +113,9 @@ struct DMMInfo dmm_info[] = {
 
 							  {"Uni-Trend UT30A", 3, 5, 8, 1, 1, 0, 1, 0, 0,1,1,1},
 							  {"Uni-Trend UT30E", 3, 5, 8, 1, 1, 0, 1, 0, 0,1,1,1},   // no image
+                                                          {"Uni-Trend UT61B", 3, 8, 8, 1, 1, 0, 1, 0, 0,1,1,1},   // no image
+                                                          {"Uni-Trend UT61D", 3, 8, 8, 1, 1, 0, 8, 0, 0,0,0,1},   // no image
+                                                          {"Uni-Trend UT61E", 6, 11, 7, 1, 1, 2, 2, 0, 0,0,0,1},   // no image
 
 							  {"Voltcraft M-3610D", 1, 0, 7, 2, 1, 0, 1, 0, 0,1,1,1},  // no image
 							  {"Voltcraft M-3650D", 1, 0, 7, 2, 1, 0, 1, 0, 0,1,1,1},
@@ -325,8 +329,6 @@ void DmmPrefs::on_ui_model_activated( int id )
   ui_numValues->setDisabled( id != 0 );
   ui_externalSetup->setDisabled( id != 0 );
   uirts->setDisabled( id != 0 );
-  uicts->setDisabled( id != 0 );
-  uidsr->setDisabled( id != 0 );
   uidtr->setDisabled( id != 0 );
 
   if (id != 0)
@@ -349,8 +351,6 @@ void DmmPrefs::on_ui_model_activated( int id )
 	ui_numValues->setValue( dmm_info[id-1].numValues );
 	ui_externalSetup->setChecked( dmm_info[id-1].externalSetup );
 	uirts->setChecked( dmm_info[id-1].rts );
-	uicts->setChecked( dmm_info[id-1].cts );
-	uidsr->setChecked( dmm_info[id-1].dsr );
 	uidtr->setChecked( dmm_info[id-1].dtr );
 
 	ui_filename->setText( "" );
@@ -360,16 +360,6 @@ void DmmPrefs::on_ui_model_activated( int id )
 bool DmmPrefs::rts() const
 {
   return uirts->isChecked();
-}
-
-bool DmmPrefs::cts() const
-{
-  return uicts->isChecked();
-}
-
-bool DmmPrefs::dsr() const
-{
-  return uidsr->isChecked();
 }
 
 bool DmmPrefs::dtr() const
@@ -463,7 +453,7 @@ QString DmmPrefs::device() const
 
 void DmmPrefs::on_ui_load_clicked()
 {
-  QString filename = QFileDialog::getOpenFileName(this,tr("Load DMM description"), m_path,	tr("DMM description (*.ini)"));
+  QString filename = QFileDialog::getOpenFileName(this,tr("Load DMM description"), m_path, tr("DMM description (*.ini)"));
 
   if (!filename.isNull())
   {
@@ -483,8 +473,6 @@ void DmmPrefs::on_ui_load_clicked()
 	protocolCombo->setCurrentIndex( cfg.value( "DMM/data-format", 0 ).toInt());
 	ui_numValues->setValue( cfg.value( "DMM/number-of-values", 1 ).toInt());
 	uirts->setChecked( cfg.value( "DMM/rts", true ).toBool());
-	uicts->setChecked( cfg.value( "DMM/cts", false ).toBool());
-	uidsr->setChecked( cfg.value( "DMM/dsr", false ).toBool());
 	uidtr->setChecked( cfg.value( "DMM/dtr", false ).toBool());
   }
 }
@@ -511,8 +499,6 @@ void DmmPrefs::on_ui_save_clicked()
 	cfg.setValue( "DMM/number-of-values", ui_numValues->value() );
 
 	cfg.setValue( "DMM/rts", uirts->isChecked() );
-	cfg.setValue( "DMM/cts", uicts->isChecked() );
-	cfg.setValue( "DMM/dsr", uidsr->isChecked() );
 	cfg.setValue( "DMM/dtr", uidtr->isChecked() );
   }
 }

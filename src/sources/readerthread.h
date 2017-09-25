@@ -68,6 +68,7 @@ class ReaderThread : public QObject
 	  void					readDMM();
 	  void					readMetex14();
 	  void					readVoltcraft14Continuous();
+	  void readCyrustekES51922();
 	  void					readVoltcraft15Continuous();
 	  void					readM9803RContinuous();
 	  void					readPeakTech10();

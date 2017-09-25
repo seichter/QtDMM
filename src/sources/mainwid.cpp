@@ -337,8 +337,7 @@ void MainWid::readConfig()
   m_dmm->setFormat( m_configDlg->format() );
   m_dmm->setPortSettings( (QSerialPort::DataBits)m_configDlg->bits(), (QSerialPort::StopBits)m_configDlg->stopBits(),
 						  m_configDlg->parity(), m_configDlg->externalSetup(),
-						  m_configDlg->rts(), m_configDlg->cts(),
-						  m_configDlg->dsr(), m_configDlg->dtr()
+						  m_configDlg->rts(), m_configDlg->dtr()
 						);
 
   ui_graph->setGraphSize( m_configDlg->windowSeconds(),
