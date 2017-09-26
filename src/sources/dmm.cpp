@@ -91,12 +91,15 @@ void DMM::setDevice( const QString & device )
 
 bool DMM::open()
 {
-  m_handle=new QSerialPort(this);
-  m_handle->setPortName(m_device);
+  /*
+  QSerialPort *qsp = new QSerialPort(this);
+  qsp->setPortName(m_device);
 
-  if( !m_handle->open(QIODevice::ReadWrite))
+  m_handle = new PortHandle(this, qsp);
+
+  if( !qsp->open(QIODevice::ReadWrite))
   {
-	int errorCode=m_handle->error();
+	int errorCode = qsp->error();
 	switch(errorCode)
 	{
 		case QSerialPort::PermissionError:
@@ -111,22 +114,27 @@ bool DMM::open()
 	}
 	Q_EMIT error( m_error );
 	delete m_handle;
-	m_handle=Q_NULLPTR;
+	m_handle = Q_NULLPTR;
 	return false;
   }
 
   if (!m_externalSetup)
   {
 	m_error = tr( "Error configuring serial port %1." ).arg(m_device);
-	if((!m_handle->setParity(m_parity)) || (!m_handle->setBaudRate(m_speed)) || (!m_handle->setStopBits(m_stopBits)) ||
-	   (!m_handle->setDataBits(m_dataBits)) || (!m_handle->setDataTerminalReady(m_dtr)) || (!m_handle->setRequestToSend(m_rts)))
+	if((!qsp->setParity(m_parity)) || (!qsp->setBaudRate(m_speed)) || (!qsp->setStopBits(m_stopBits)) ||
+	   (!qsp->setDataBits(m_dataBits)) || (!qsp->setDataTerminalReady(m_dtr)) || (!qsp->setRequestToSend(m_rts)))
 	{
 		Q_EMIT error( m_error );
 		delete m_handle;
-		m_handle=Q_NULLPTR;
+		m_handle = Q_NULLPTR;
 		return false;
 	}
   }
+  */
+  HIDPort *h = new HIDPort();
+  m_handle = new PortHandle(this, h);
+  m_device = "USB-HID";
+
   m_error = tr( "Connecting ..." );
   Q_EMIT error( m_error );
   m_readerThread->setHandle( m_handle );

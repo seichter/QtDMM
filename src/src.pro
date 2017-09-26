@@ -1,6 +1,8 @@
 QT       += core gui widgets printsupport serialport
 CONFIG   += c++14 no_keywords
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags hidapi-libusb libusb-1.0)
 QMAKE_LFLAGS += -fuse-ld=gold
+LIBS += $$system(pkg-config --libs hidapi-libusb libusb-1.0 libudev)
 
 TEMPLATE        = app
 
@@ -49,6 +51,7 @@ HEADERS   = sources/colorbutton.h \
 	    sources/integrationprefs.h \
 	    sources/mainwid.h \
 	    sources/mainwin.h \
+	    sources/porthandle.h \
 	    sources/prefwidget.h \
 	    sources/printdlg.h \
 	    sources/readerthread.h \
@@ -75,6 +78,7 @@ SOURCES   = sources/colorbutton.cpp \
 	    sources/main.cpp \
 	    sources/mainwid.cpp \
 	    sources/mainwin.cpp \
+	    sources/porthandle.cpp \
 	    sources/prefwidget.cpp \
 	    sources/printdlg.cpp \
 	    sources/readerthread.cpp \

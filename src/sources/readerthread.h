@@ -24,11 +24,11 @@
 #define READERTHREAD_HH
 
 #include <QtCore>
+#include "porthandle.h"
 #include "readevent.h"
 
 #define FIFO_LENGTH 100
 
-class QSerialPort;
 class ReaderThread : public QObject
 {
   Q_OBJECT
@@ -44,7 +44,7 @@ class ReaderThread : public QObject
 	  void					run();
 	  void					start();
 	  void					startRead();
-	  void					setHandle( QSerialPort *handle );
+	  void					setHandle(PortHandle *handle);
 	  void					setFormat( ReadEvent::DataFormat );
 
 	  ReadStatus			status() const { return m_status; }
@@ -87,7 +87,7 @@ class ReaderThread : public QObject
 	  void					socketClose();
 
 	private:
-	  QSerialPort			*m_serialPort;
+	  PortHandle *m_portHandle;
 
 	private Q_SLOTS:
 	  void					timer();

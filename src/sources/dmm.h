@@ -27,6 +27,7 @@
 #include <QtSerialPort>
 
 #include "readerthread.h"
+#include "porthandle.h"
 #include "readevent.h"
 
 class DMM : public QObject
@@ -54,7 +55,7 @@ class DMM : public QObject
 	  void						error( const QString & );
 
 	protected:
-	  QSerialPort               *m_handle;
+	  PortHandle *m_handle;
 	  int                       m_speed;
 	  QSerialPort::Parity       m_parity;
 	  QSerialPort::StopBits		m_stopBits;

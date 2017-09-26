@@ -40,7 +40,7 @@ ReaderThread::ReaderThread( QObject *receiver ) :
   m_numValues( 1 )
 {
   m_buffer[14] = '\0';
-  m_serialPort=Q_NULLPTR;
+  m_portHandle = Q_NULLPTR;
 }
 
 void ReaderThread::setFormat( ReadEvent::DataFormat format )
@@ -48,21 +48,21 @@ void ReaderThread::setFormat( ReadEvent::DataFormat format )
   m_format = format;
 }
 
-void ReaderThread::setHandle( QSerialPort *handle )
+void ReaderThread::setHandle(PortHandle *handle)
 {
-  m_serialPort = handle;
+  m_portHandle = handle;
 
   m_readValue = false;
 
-  if (!m_serialPort)
+  if (m_portHandle == Q_NULLPTR)
   {
     m_status = ReaderThread::NotConnected;
     m_readValue = false;
   }
   else
   {
-    connect(m_serialPort,SIGNAL(readyRead()),this,SLOT(socketNotifierSLOT()));
-    connect(m_serialPort,SIGNAL(aboutToClose()),this,SLOT(socketClose()));
+    connect(m_portHandle,SIGNAL(readyRead()),this,SLOT(socketNotifierSLOT()));
+    connect(m_portHandle,SIGNAL(aboutToClose()),this,SLOT(socketClose()));
   }
 }
 
@@ -104,7 +104,7 @@ void ReaderThread::socketNotifierSLOT()
 
   m_status = ReaderThread::Ok;
 
-  while ((r = m_serialPort->read( &byte, 1)) > 0) {
+  while ((r = m_portHandle->read( &byte, 1)) > 0) {
     retval++;
 
     m_fifo[m_length] = byte;
@@ -132,7 +132,7 @@ void ReaderThread::socketNotifierSLOT()
 
       m_id = (m_id + 1) % m_numValues;
 
-      if (m_serialPort->bytesAvailable() < formatLength()) {
+      if (m_portHandle->bytesAvailable() < formatLength()) {
         break;
       }
     }
@@ -542,7 +542,7 @@ void ReaderThread::readMetex14()
   if (m_sendRequest)
   {
 	/* TODO: Errorhandling */
-	if (m_serialPort->write("D\n",2) != 2)
+	if (m_portHandle->write("D\n",2) != 2)
 		m_status = Error;
 	//std::cerr << "WROTE: " << ret << std::endl;
 	m_sendRequest = false;
