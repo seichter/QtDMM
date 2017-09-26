@@ -340,6 +340,12 @@ void DmmPrefs::on_ui_model_activated( int id )
   else
 	message2->hide();
 
+  QStringList portlist;
+  for (auto port: QSerialPortInfo::availablePorts()) {
+    portlist << port.systemLocation();
+    qDebug() << port.portName() << "--" << port.manufacturer() << "--" << port.description() << "--" << port.systemLocation();
+  }
+
   if (id > 0)
   {
 	baudRate->setCurrentIndex( dmm_info[id-1].baud );
@@ -354,7 +360,20 @@ void DmmPrefs::on_ui_model_activated( int id )
 	uidtr->setChecked( dmm_info[id-1].dtr );
 
 	ui_filename->setText( "" );
+
+    if (QString(dmm_info[id - 1].name).contains("UT61E")) {
+      QStringList hid_list;
+      if (HIDPort::availablePorts(hid_list)) {
+        for (auto port: hid_list) {
+          portlist << port;
+          qDebug() << " HID port" << port;
+        }
+      }
+    }
   }
+
+  m_portlist->setStringList(portlist);
+  port->setModel(m_portlist);
 }
 
 bool DmmPrefs::rts() const

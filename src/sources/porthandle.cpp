@@ -1,24 +1,15 @@
 #include "porthandle.h"
 
-HIDPort::HIDPort(QObject *parent, const char *path): QObject( parent) {
-  int dev_cnt;
-  struct hid_device_info *devs, *cur_dev;
+HIDPort::HIDPort(QObject *parent, const QString &path): QObject( parent) {
+  if (!path.isNull()) {
+    QString prefix = "HID 0x1a86:0xe008 ";
 
-  devs = hid_enumerate(0x1a86, 0xe008); // all chips this SW belongs to...
-  for (dev_cnt = 0, cur_dev = devs; cur_dev != Q_NULLPTR; cur_dev = cur_dev->next) {
-    dev_cnt++;
-  }
-
-  fprintf(stderr, "[!] found %i devices:\n", dev_cnt);
-
-  for (dev_cnt = 0, cur_dev = devs; cur_dev != Q_NULLPTR; cur_dev = cur_dev->next) {
-    fprintf(stderr, "  %s\n", cur_dev->path);
-  }
-
-  hid_free_enumeration(devs);
-
-  if (path != Q_NULLPTR) {
-    m_handle = hid_open_path(path);
+    if (path.startsWith(prefix)) {
+      QString s = path;
+      QByteArray ba = s.remove(0, prefix.size()).toUtf8();
+      fprintf(stderr, "connecting to %s\n", ba.data());
+      m_handle = hid_open_path(ba.data());
+    }
   }
 
   // Open the device using the VID, PID,
@@ -43,6 +34,27 @@ HIDPort::~HIDPort() {
   if (m_isOpen) {
     close();
   }
+}
+
+bool HIDPort::availablePorts(QStringList &portlist) {
+  int dev_cnt;
+  struct hid_device_info *devs, *cur_dev;
+
+  devs = hid_enumerate(0x1a86, 0xe008); // all chips this SW belongs to...
+  for (dev_cnt = 0, cur_dev = devs; cur_dev != Q_NULLPTR; cur_dev = cur_dev->next) {
+    dev_cnt++;
+  }
+
+  fprintf(stderr, "[!] found %i devices:\n", dev_cnt);
+
+  for (cur_dev = devs; cur_dev != Q_NULLPTR; cur_dev = cur_dev->next) {
+    fprintf(stderr, "  %s\n", cur_dev->path);
+    portlist << QString("HID 0x1a86:0xe008 ").append(cur_dev->path);
+  }
+
+  hid_free_enumeration(devs);
+
+  return (dev_cnt > 0);
 }
 
 void HIDPort::close() {

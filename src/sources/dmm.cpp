@@ -87,61 +87,70 @@ void DMM::setSpeed( int speed )
 void DMM::setDevice( const QString & device )
 {
   m_device = device;
+  QByteArray ba = device.toUtf8();
+  std::cerr << "DMM::setDevice(" << ba.data() << std::endl;
 }
 
 bool DMM::open()
 {
-  /*
-  QSerialPort *qsp = new QSerialPort(this);
-  qsp->setPortName(m_device);
-
-  m_handle = new PortHandle(this, qsp);
-
-  if( !qsp->open(QIODevice::ReadWrite))
-  {
-	int errorCode = qsp->error();
-	switch(errorCode)
-	{
-		case QSerialPort::PermissionError:
-			m_error = tr( "Access denied for %1.").arg(m_device);
-			break;
-		case QSerialPort::DeviceNotFoundError:
-			m_error = tr( "No such device %1." ).arg(m_device);
-			break;
-		default:
-			m_error = tr( "Error opening %1.\nDMM connected and switched on?" ).arg(m_device);
-			break;
-	}
-	Q_EMIT error( m_error );
-	delete m_handle;
-	m_handle = Q_NULLPTR;
-	return false;
+  if (m_device.isEmpty()) {
+    m_error = tr("No device specified");
+    Q_EMIT error(m_error);
+    return false;
   }
 
-  if (!m_externalSetup)
-  {
-	m_error = tr( "Error configuring serial port %1." ).arg(m_device);
-	if((!qsp->setParity(m_parity)) || (!qsp->setBaudRate(m_speed)) || (!qsp->setStopBits(m_stopBits)) ||
-	   (!qsp->setDataBits(m_dataBits)) || (!qsp->setDataTerminalReady(m_dtr)) || (!qsp->setRequestToSend(m_rts)))
-	{
-		Q_EMIT error( m_error );
-		delete m_handle;
-		m_handle = Q_NULLPTR;
-		return false;
-	}
-  }
-  */
-  HIDPort *h = new HIDPort();
-  m_handle = new PortHandle(this, h);
-  m_device = "USB-HID";
+  if (!m_device.startsWith("HID ")) {
+    QSerialPort *qsp = new QSerialPort(this);
+    qsp->setPortName(m_device);
 
-  m_error = tr( "Connecting ..." );
-  Q_EMIT error( m_error );
-  m_readerThread->setHandle( m_handle );
-  timerEvent( 0 );
+    m_handle = new PortHandle(this, qsp);
+
+    if (!qsp->open(QIODevice::ReadWrite)) {
+      int errorCode = qsp->error();
+
+      switch (errorCode) {
+        case QSerialPort::PermissionError:
+          m_error = tr("Access denied for %1.").arg(m_device);
+          break;
+        case QSerialPort::DeviceNotFoundError:
+          m_error = tr("No such device %1.").arg(m_device);
+          break;
+        default:
+          m_error = tr("Error opening %1.\nDMM connected and switched on?").arg(m_device);
+          break;
+      }
+
+      Q_EMIT error(m_error);
+      delete m_handle;
+      m_handle = Q_NULLPTR;
+      return false;
+    }
+
+    if (!m_externalSetup) {
+      m_error = tr("Error configuring serial port %1.").arg(m_device);
+
+      if (!qsp->setParity(m_parity) || !qsp->setBaudRate(m_speed) ||
+          !qsp->setStopBits(m_stopBits) || !qsp->setDataBits(m_dataBits) ||
+          !qsp->setDataTerminalReady(m_dtr) || !qsp->setRequestToSend(m_rts)) {
+        Q_EMIT error( m_error );
+        delete m_handle;
+        m_handle = Q_NULLPTR;
+        return false;
+      }
+    }
+  }
+  else {
+    HIDPort *h = new HIDPort(Q_NULLPTR, m_device);
+    m_handle = new PortHandle(this, h);
+  }
+
+  m_error = tr("Connecting ...");
+  Q_EMIT error(m_error);
+  m_readerThread->setHandle(m_handle);
+  timerEvent(0);
 
   // mt: added timer id
-  m_delayTimer = startTimer( 1000 );
+  m_delayTimer = startTimer(1000);
   return true;
 }
 

@@ -26,6 +26,7 @@
 #include <QtSerialPort>
 
 #include "ui_uidmmprefs.h"
+#include "porthandle.h"
 #include "readevent.h"
 
 struct DMMInfo

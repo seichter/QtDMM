@@ -11,7 +11,7 @@ class HIDPort: public QObject {
   Q_OBJECT
   public:
 
-  HIDPort(QObject *parent = Q_NULLPTR, const char *path = Q_NULLPTR);
+  HIDPort(QObject *parent = Q_NULLPTR, const QString & path = QString());
   ~HIDPort();
 
   qint64 bytesAvailable() {
@@ -21,6 +21,7 @@ class HIDPort: public QObject {
     return ret;
   }
 
+  static bool availablePorts(QStringList &portlist);
   void close();
   bool isOpen() {
     return m_isOpen;
