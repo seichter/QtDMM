@@ -951,14 +951,16 @@ void DMM::readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFo
   relative = pStr[CyrustekES51922_Option1] & 2;
 
   if (pStr[CyrustekES51922_Option3] & 2)
-    special.append(" AUTO");
+    // (" AUTO")
+    ;
   else
-    special.append(" MANU");
+    // (" MANUAL")
+    ;
 
   if (pStr[CyrustekES51922_Option3] & 8)
-    special.append(" DC");
+    special = "DC";
   else
-    special.append(" AC");
+    special = "AC";
 
   hold = pStr[CyrustekES51922_Option4] & 2;
 
