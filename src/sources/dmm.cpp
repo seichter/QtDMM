@@ -87,8 +87,6 @@ void DMM::setSpeed( int speed )
 void DMM::setDevice( const QString & device )
 {
   m_device = device;
-  QByteArray ba = device.toUtf8();
-  std::cerr << "DMM::setDevice(" << ba.data() << std::endl;
 }
 
 bool DMM::open()
