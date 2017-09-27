@@ -748,7 +748,10 @@ void DMM::readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFo
     break;
 
   case 0x32:
-    unit = "Hz";
+    if (pStr[CyrustekES51922_Status] & 8)
+      unit = "Hz";
+    else
+      unit = "%";
 
     switch (pStr[CyrustekES51922_Range]) {
     case 0x30:
@@ -944,6 +947,14 @@ void DMM::readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFo
     std::stringstream ss;
     ss << std::fixed << std::setprecision(4) << displayValue;
     val = QString::fromStdString(ss.str());
+
+    if (dVal < 0.0) {
+      val = val.left(7);
+    }
+    else {
+      val = val.left(6);
+    }
+
     dVal *= dMult;
   }
 
@@ -959,7 +970,7 @@ void DMM::readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFo
 
   if (pStr[CyrustekES51922_Option3] & 8)
     special = "DC";
-  else
+  else if (pStr[CyrustekES51922_Option3] & 4)
     special = "AC";
 
   hold = pStr[CyrustekES51922_Option4] & 2;
