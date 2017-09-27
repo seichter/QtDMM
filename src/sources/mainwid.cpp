@@ -182,13 +182,13 @@ void MainWid::valueSLOT( double dval, const QString & val, const QString & u,con
   QString tmpUnit = u;
 
   m_display->setUnit( id, tmpUnit );
+  ui_graph->setUnit(u);
 
   if (0 == id)
   {
 	if (m_lastUnit != s)
 	{
 	  resetSLOT();
-	  ui_graph->setUnit( u );
 	}
 	m_lastUnit = s;
 
