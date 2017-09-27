@@ -27,6 +27,7 @@
 #include "dmmgraph.h"
 #include "Settings.h"
 
+#include <iostream>
 
 DMMGraph::DMMGraph(QWidget *parent):DMMGraph(parent,Q_NULLPTR)
 {
@@ -815,7 +816,10 @@ void DMMGraph::clearSLOT()
   m_first = true;
   m_dirty = false;
 
-  update();
+  int size = m_cfg->getInt("Window/size");
+  int length = m_cfg->getInt("Window/length");
+
+  setGraphSize(size, length);
 }
 
 void DMMGraph::emitInfo()
@@ -1291,26 +1295,10 @@ void DMMGraph::importDataSLOT()
 		return;
         }
 
-	m_sampleTime = sample / (cnt>1 ? cnt-1 : 1); //m_graphStartDateTime.secsTo( graphEnd );
+	m_sampleTime = sample / (cnt > 1 ? cnt - 1 : 1); //m_graphStartDateTime.secsTo( graphEnd );
+	m_sampleTime *= 10;  // m_sampleTime is supposed to be in 1/10 of seconds
 
-	int size = m_size*m_sampleTime;
-	//int length = (m_length-1)*m_sampleTime;
-
-	if (cnt > 1)
-	{
-	  //if (sample/(cnt-1) != m_sampleTime)
-	  {
-		Q_EMIT sampleTime( m_sampleTime );
-	  }
-	  m_sampleTime = sample/(cnt-1);
-	}
-
-  /*  if (cnt*m_sampleTime > length)
-    {
-      if (size > cnt*m_sampleTime) size = cnt*m_sampleTime;
-      emit graphSize( size, cnt*m_sampleTime );
-      setGraphSize( size, cnt*m_sampleTime );
-  }*/
+	int size = cnt * m_sampleTime / 10;
 
 	m_scaleMin =  1e40;
 	m_scaleMax = -1e40;
@@ -1318,7 +1306,7 @@ void DMMGraph::importDataSLOT()
 	if (file.open( QIODevice::ReadOnly ))
 	{
 	  // TEST
-	  setGraphSize( size, cnt*m_sampleTime );
+	  setGraphSize( size, size);
 
 	  int i = 0;
 
@@ -1334,11 +1322,11 @@ void DMMGraph::importDataSLOT()
 		  (*m_array)[i++] = token[2].toDouble();
 		}
 	  }
+	  file.close();
 
 	  m_sampleCounter = m_pointer = cnt;
 	  setScale( true, true, 0, 0 );
 
-	  file.close();
 	  m_dirty = false;
 
 	  Q_EMIT error( fn );
@@ -1347,14 +1335,6 @@ void DMMGraph::importDataSLOT()
 
 	  computeUnitFactor();
 	}
-
-//std::cerr << "min=" << m_scaleMin << " max=" << m_scaleMax << std::endl;
-//std::cerr << "factor=" << m_factor << " prefix=" <<
-//  m_prefix.latin1() << " unit=" << m_unit.latin1() << std::endl;
-
-//std::cerr << "size=" << size << "cnt*m_sampleTime=" << cnt*m_sampleTime << std::endl;
-	// TEST
-	Q_EMIT graphSize( size, cnt*m_sampleTime );
   }
 }
 

@@ -111,8 +111,6 @@ class DMMGraph : public QWidget
 	  void						info( const QString & );
 	  void						error( const QString & );
 	  void						running( bool );
-	  void						graphSize( int, int );
-	  void						sampleTime( int );
 	  void						externalTriggered();
 	  void						zoomIn( double );
 	  void						zoomOut( double );
