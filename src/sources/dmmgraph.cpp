@@ -1243,7 +1243,12 @@ void DMMGraph::importDataSLOT()
 		m_graphStartDateTime = QDateTime( startDate, startTime );
 		graphEnd = QDateTime( startDate, startTime );
 
-		setUnit( line.mid( 27, 3 ) );
+		if (token.length() > 3) {
+		  setUnit(token[3].left(3));
+		}
+		else {
+		  setUnit(" ");
+		}
 
 		cnt++;
 
@@ -1279,6 +1284,12 @@ void DMMGraph::importDataSLOT()
 	}
 
 	//std::cerr << "sample=" << sample << std::endl;
+
+	if (sample == 0) {
+		Q_EMIT error( tr("Oops! Too few samples in file %1").arg(fn) );
+
+		return;
+        }
 
 	m_sampleTime = sample / (cnt>1 ? cnt-1 : 1); //m_graphStartDateTime.secsTo( graphEnd );
 
