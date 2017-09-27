@@ -1221,8 +1221,7 @@ void DMMGraph::importDataSLOT()
 
 	  if (!line.isNull())
 	  {
-		QRegExp re( "[0-9]+\\.[0-9]+\\.[0-9]+\t[0-9]+:[0-9]+:[0-9]+\t[-]?[0-9]*\\.[0-9]+\t.*");
-	// mt: changed (ups, was obsolete in Qt3 already)
+		QRegExp re( "[0-9]+\\.[0-9]+\\.[0-9]+\t[0-9]+:[0-9]+:[0-9]+\t(([-]?[0-9]*\\.[0-9]+)|([Nn][Aa][Nn])|([Ii][Nn][Ff]))\t.*");
 		if (!re.exactMatch(line))
 		{
 		  Q_EMIT error( tr("Oops! Seems not to be a valid file") );
