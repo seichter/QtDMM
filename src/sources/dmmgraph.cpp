@@ -1221,7 +1221,7 @@ void DMMGraph::importDataSLOT()
 
 	  if (!line.isNull())
 	  {
-		QRegExp re( "[0-9]+\\.[0-9]+\\.[0-9]+\t[0-9]+:[0-9]+:[0-9]+\t(([-]?[0-9]*\\.[0-9]+)|([Nn][Aa][Nn])|([Ii][Nn][Ff]))\t.*");
+		QRegExp re( "[0-9]+\\.[0-9]+\\.[0-9]+\t[0-9]+:[0-9]+:[0-9]+\t(([-]?[0-9]*\\.[0-9]+)|([Nn][Aa][Nn])|([-]?[Ii][Nn][Ff]))\t.*");
 		if (!re.exactMatch(line))
 		{
 		  Q_EMIT error( tr("Oops! Seems not to be a valid file") );
@@ -1319,6 +1319,7 @@ void DMMGraph::importDataSLOT()
 		if (!line.isEmpty())
 		{
 		  token = line.split("\t");
+                  // This will translate the NaN and Inf to 0.0. I don't know if there is a better translation
 		  (*m_array)[i++] = token[2].toDouble();
 		}
 	  }
