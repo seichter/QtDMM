@@ -3,3 +3,4 @@ bin/
 src/Makefile
 src/translations/qtdmm_de.qm
 tmp/
+*.txt.user
