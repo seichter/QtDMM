@@ -30,20 +30,20 @@
 class QPrinter;
 class PrintDlg : public QDialog, private Ui::UIPrintDlg
 {
-  Q_OBJECT
-	public:
-	  PrintDlg(QWidget *parent=Q_NULLPTR);
-	  void		setPrinter( QPrinter * prt );
-	  QString	title() const { return printTitle->text(); }
-	  QString	comment() const { return printComment->toPlainText(); }
+    Q_OBJECT
+public:
+    PrintDlg(QWidget *parent=Q_NULLPTR);
+    void		setPrinter( QPrinter * prt );
+    QString	title() const { return printTitle->text(); }
+    QString	comment() const { return printComment->toPlainText(); }
 
-	protected:
-	  QPrinter	*m_printer;
+protected:
+    QPrinter	*m_printer;
 
-	protected Q_SLOTS:
-	  void		on_configBut_clicked();
-	  void		on_helpBut_clicked();
-	  void		createPrinterString();
+protected Q_SLOTS:
+    void		on_configBut_clicked();
+    void		on_helpBut_clicked();
+    void		createPrinterString();
 
 };
 

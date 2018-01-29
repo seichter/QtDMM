@@ -32,64 +32,64 @@
 
 class DMM : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 
-	public:
+public:
 
-	  DMM(QObject *parent);
-	  void						setSpeed( int );
-	  void						setDevice( const QString & );
-	  bool						open();
-	  void						close();
-	  void						setName( const QString &name) {m_name=name;}
-	  QString					errorString() const { return m_error; }
-	  bool						isOpen() const;
-	  void						setFormat( ReadEvent::DataFormat );
-	  void						setPortSettings(QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup, bool rts, bool dtr );
-	  void						setNumValues( int );
-	  void						setConsoleLogging( bool on ) { m_consoleLogging = on; }
+    DMM(QObject *parent);
+    void						setSpeed( int );
+    void						setDevice( const QString & );
+    bool						open();
+    void						close();
+    void						setName( const QString &name) {m_name=name;}
+    QString					errorString() const { return m_error; }
+    bool						isOpen() const;
+    void						setFormat( ReadEvent::DataFormat );
+    void						setPortSettings(QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup, bool rts, bool dtr );
+    void						setNumValues( int );
+    void						setConsoleLogging( bool on ) { m_consoleLogging = on; }
 
-	Q_SIGNALS:
-	  void						value( double dval, const QString & val, const QString & unit, const QString & special,
-									   bool showBar,int id );
-	  void						error( const QString & );
+Q_SIGNALS:
+    void						value( double dval, const QString & val, const QString & unit, const QString & special,
+                                       bool showBar,int id );
+    void						error( const QString & );
 
-	protected:
-	  PortHandle *m_handle;
-	  int                       m_speed;
-	  QSerialPort::Parity       m_parity;
-	  QSerialPort::StopBits		m_stopBits;
-	  QSerialPort::DataBits		m_dataBits;
-	  QString                   m_device;
-	  QString                   m_error;
-	  ReaderThread             *m_readerThread;
-	  ReaderThread::ReadStatus	m_oldStatus;
-	  QString                   m_name;
-	  bool                      m_consoleLogging;
-	  bool                      m_externalSetup;
-	  bool						m_dtr;
-	  bool						m_rts;
-	  int                       m_flags;
-	  int						m_delayTimer;
+protected:
+    PortHandle *m_handle;
+    int                       m_speed;
+    QSerialPort::Parity       m_parity;
+    QSerialPort::StopBits		m_stopBits;
+    QSerialPort::DataBits		m_dataBits;
+    QString                   m_device;
+    QString                   m_error;
+    ReaderThread             *m_readerThread;
+    ReaderThread::ReadStatus	m_oldStatus;
+    QString                   m_name;
+    bool                      m_consoleLogging;
+    bool                      m_externalSetup;
+    bool						m_dtr;
+    bool						m_rts;
+    int                       m_flags;
+    int						m_delayTimer;
 
-	  void						timerEvent( QTimerEvent * ) Q_DECL_OVERRIDE;
-	  QString					insertComma( const QString &, int );
-	  QString					insertCommaIT( const QString &, int );
+    void						timerEvent( QTimerEvent * ) Q_DECL_OVERRIDE;
+    QString					insertComma( const QString &, int );
+    QString					insertCommaIT( const QString &, int );
 
-	  void						readASCII( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readVC820Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readVC870Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readM9803RContinuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readIsoTechContinuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readVC940Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readQM1537Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void						readRS22812Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
-	  void readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFormat df);
-	  const char				*vc820Digit( int );
-	  const char				*RS22812Digit( int );
+    void						readASCII( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readVC820Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readVC870Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readM9803RContinuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readIsoTechContinuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readVC940Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readQM1537Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void						readRS22812Continuous( const QByteArray & data, int id, ReadEvent::DataFormat df );
+    void readCyrustekES51922(const QByteArray & data, int id, ReadEvent::DataFormat df);
+    const char				*vc820Digit( int );
+    const char				*RS22812Digit( int );
 
-	protected Q_SLOTS:
-	  void						readEventSLOT( const QByteArray & str, int id, ReadEvent::DataFormat df );
+protected Q_SLOTS:
+    void						readEventSLOT( const QByteArray & str, int id, ReadEvent::DataFormat df );
 
 };
 
