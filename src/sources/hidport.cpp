@@ -15,8 +15,10 @@ HIDPort::HIDPort(QObject *parent, const QString &path)
         if (path.startsWith(prefix)) {
             QString s = path;
             QByteArray ba = s.remove(0, prefix.size()).toUtf8();
-            fprintf(stderr, "connecting to %s\n", ba.data());
+
             m_handle = hid_open_path(ba.data());
+
+            fprintf(stderr, "connecting to %s result 0x%x\n", ba.data(), m_handle);
         }
     }
 
@@ -24,9 +26,19 @@ HIDPort::HIDPort(QObject *parent, const QString &path)
     // and optionally the Serial number (NULL for the hoitek chip).
     if (m_handle == Q_NULLPTR) {
 
-        fprintf(stderr, "connection open with null\n");
-
         m_handle = hid_open(0x1a86, 0xe008, NULL);
+
+        fprintf(stderr, "connection open with VID:PID result 0x%x\n", m_handle);
+
+
+    }
+
+    if (m_handle == Q_NULLPTR) {
+
+        m_handle = hid_open_path("/dev/hidraw1");
+
+        fprintf(stderr, "connecting to raw device 0x%x\n", m_handle);
+
     }
 
     if (m_handle != Q_NULLPTR) {
@@ -67,11 +79,14 @@ QStringList HIDPort::availablePorts() {
 
         qDebug() << "HID path " << cur_dev->path;
 
-        fprintf(stderr, "[!] found %s %x:%x %S %S\n",
+        fprintf(stderr, "[!] found %s %x:%x %S %S %S %d %d\n",
                 cur_dev->path,
                 cur_dev->vendor_id,cur_dev->product_id,
                 cur_dev->manufacturer_string,
-                cur_dev->product_string
+                cur_dev->product_string,
+                cur_dev->serial_number,
+                cur_dev->usage,
+                cur_dev->usage_page
                 );
 
 
