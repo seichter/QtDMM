@@ -70,6 +70,8 @@ set(SOURCES
 	src/sources/graphprefs.h
 	src/sources/guiprefs.cpp
 	src/sources/guiprefs.h
+        src/sources/hidport.h
+        src/sources/hidport.cpp
 	src/sources/integrationprefs.cpp
 	src/sources/integrationprefs.h
 	src/sources/main.cpp

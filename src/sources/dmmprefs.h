@@ -81,7 +81,10 @@ class DmmPrefs : public PrefWidget ,private Ui::UIDmmPrefs
 	protected:
 	  QString				m_path;
 
-	private:
+private slots:
+      void on_port_activated(const QString &arg1);
+
+private:
 	  QStringListModel		*m_portlist;
 
 };

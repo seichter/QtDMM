@@ -29,6 +29,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "hidport.h"
+
 
 #define LOG_OUTPUT
 
@@ -44,7 +46,8 @@ DMM::DMM(QObject *parent) :
     m_consoleLogging( false ),
     m_externalSetup( false ),
     m_dtr(false),
-    m_rts(false)
+    m_rts(false),
+    m_delayTimer(0)
 {
     m_readerThread = new ReaderThread( this );
 
@@ -56,8 +59,13 @@ DMM::DMM(QObject *parent) :
 
 }
 
-void DMM::setPortSettings( QSerialPort::DataBits bits, QSerialPort::StopBits stopBits, QSerialPort::Parity parity, bool externalSetup,
-                           bool rts, bool dtr )
+void DMM::setPortSettings( QSerialPort::DataBits bits,
+                           QSerialPort::StopBits stopBits,
+                           QSerialPort::Parity parity,
+                           bool externalSetup,
+                           bool rts,
+                           bool dtr
+                           )
 {
     m_externalSetup = externalSetup;
     m_parity  = parity;
@@ -74,9 +82,7 @@ void DMM::setFormat( ReadEvent::DataFormat format )
 
 bool DMM::isOpen() const
 {
-    if(!m_handle)
-        return false;
-    return m_handle->isOpen();
+    return (m_handle) ? m_handle->isOpen() : false;
 }
 
 void DMM::setSpeed( int speed )
@@ -97,8 +103,11 @@ bool DMM::open()
         return false;
     }
 
-    if (!m_device.startsWith("HID ")) {
+    if (!m_device.startsWith("HID "))
+    {
+
         QSerialPort *qsp = new QSerialPort(this);
+
         qsp->setPortName(m_device);
 
         m_handle = new PortHandle(this, qsp);
@@ -138,6 +147,9 @@ bool DMM::open()
         }
     }
     else {
+
+        qDebug() << "requesting HID device";
+
         HIDPort *h = new HIDPort(Q_NULLPTR, m_device);
         m_handle = new PortHandle(this, h);
     }
