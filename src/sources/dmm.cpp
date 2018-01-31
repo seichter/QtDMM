@@ -103,7 +103,14 @@ bool DMM::open()
         return false;
     }
 
-    if (!m_device.startsWith("HID "))
+    if (m_device.startsWith("HID ")) {
+
+        qDebug() << "requesting HID device";
+
+        HIDPort *h = new HIDPort(Q_NULLPTR, m_device);
+        m_handle = new PortHandle(this, h);
+
+    } else
     {
 
         QSerialPort *qsp = new QSerialPort(this);
@@ -145,13 +152,6 @@ bool DMM::open()
                 return false;
             }
         }
-    }
-    else {
-
-        qDebug() << "requesting HID device";
-
-        HIDPort *h = new HIDPort(Q_NULLPTR, m_device);
-        m_handle = new PortHandle(this, h);
     }
 
     m_error = tr("Connecting ...");
