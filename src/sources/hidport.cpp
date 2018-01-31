@@ -114,7 +114,8 @@ void HIDPort::run() {
     if (m_isOpen) {
         memset(m_buffer, 0, m_buflen);
 
-        unsigned int bps = 19200;
+//        unsigned int bps = 19200;
+        unsigned int bps = 2400;
         // Send a Feature Report to the device
         m_buffer[0] = 0x0; // report ID
         m_buffer[1] = bps;
@@ -125,10 +126,9 @@ void HIDPort::run() {
         int res = hid_send_feature_report(m_handle, m_buffer, 6); // 6 bytes
 
         if (res < 0) {
-            fprintf(stderr, "Unable to send a feature report.\n");
+            fprintf(stderr, "Unable to send a feature report. (res:%d) %ls\n",res,hid_error(m_handle));
             close();
-        }
-        else {
+        } else {
             memset(m_buffer, 0, m_buflen);
             QThread::usleep(1000);
 
