@@ -1,0 +1,5 @@
+
+# allows full access to QinHeng USB to Serial adapter - needed to write commands
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e008", GROUP:="wheel", TAG+="uaccess"
+
+# note: Arch Linux has no GROUP:="plugdev"
